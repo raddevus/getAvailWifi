@@ -3,6 +3,8 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+typedef void (*ButtonPressHandler) (void);
+
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -64,4 +66,29 @@ const char* getEncryptionType(wifi_auth_mode_t type) {
     case WIFI_AUTH_WPA3_PSK: return "WPA3";
     default: return "Unknown";
   }
+}
+
+void checkButton(const int BUTTON,  bool &last, bool &current, ButtonPressHandler handler ){
+  
+  current = debounce(last, BUTTON);              // Read debounced state
+  
+  if (last == LOW && current == HIGH)    // If it was pressed…
+  {
+    // This runs the code that we want to happen 
+    // when the user presses the button.  The function ptr 
+    // allows us to do different types of work
+     handler();
+  }
+  last = current;                        // Reset button value
+}
+
+boolean debounce(boolean last, int button)
+{
+ boolean current = digitalRead(button);    // Read the button state
+ if (last != current)                      // If it's different…
+ {
+  delay(5);                                // Wait 5ms -- thought delay mattered but it didn't (see INPUT_PULLDOWN note)
+  current = digitalRead(button);           // Read it again
+ }
+ return current;                           // Return the current value
 }
