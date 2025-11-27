@@ -85,6 +85,9 @@ void scanWifi(){
       Serial.printf("#####  Encryption: %s\n\n", allWifi[i].encType);
     }
   }
+  char buffer[50];
+  sprintf(buffer,"Found %d networks.\n", availWifiCount);
+  currentOutput = std::string(buffer);
 }
 
 const char* getEncryptionType(wifi_auth_mode_t type) {
