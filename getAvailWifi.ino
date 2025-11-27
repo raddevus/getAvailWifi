@@ -12,6 +12,7 @@ const int DATA_LED = 7;
 bool flashIsOn = false;
 int wifiIdx = 0;
 int availWifiCount = 0;
+bool shouldUpdateDisplay = false;
 
 struct wifiInfo{
   std::string ssid;
@@ -51,7 +52,12 @@ void setup() {
 }
 
 void loop() {
-  display.clearDisplay();
+
+  checkButton(MAIN_BTN,mainBtnPrev,mainBtnCurrent,checkChangeMainButton);
+}
+
+void updateDisplay(){
+    display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
@@ -61,7 +67,7 @@ void loop() {
   display.println(encType.c_str());
   
   display.display();
-  checkButton(MAIN_BTN,mainBtnPrev,mainBtnCurrent,checkChangeMainButton);
+  Serial.println("Update display is complete.");
 }
 
 void scanWifi(){
@@ -88,6 +94,7 @@ void scanWifi(){
   char buffer[50];
   sprintf(buffer,"Found %d networks.\n", availWifiCount);
   currentOutput = std::string(buffer);
+  updateDisplay();
 }
 
 const char* getEncryptionType(wifi_auth_mode_t type) {
@@ -106,6 +113,8 @@ int wifiInfoCount = 0;
 void checkChangeMainButton(void){
   if (mainBtnPrev == LOW && mainBtnCurrent == HIGH){
     flashIsOn = !flashIsOn;
+    // button was pressed so updateDisplay should be called
+    shouldUpdateDisplay = true;
   }
   currentOutput = allWifi[wifiIdx].ssid;
   char buffer[50];
@@ -126,7 +135,11 @@ void checkChangeMainButton(void){
   }
   else{
     analogWrite(DATA_LED, 0);
-  } 
+  }
+  if (shouldUpdateDisplay){
+    updateDisplay();
+    shouldUpdateDisplay = false;
+  }
 }
 
 void checkButton(const int BUTTON,  bool &last, bool &current, ButtonPressHandler handler ){
