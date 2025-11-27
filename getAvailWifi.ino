@@ -10,8 +10,7 @@ bool mainBtnPrev = LOW;
 bool mainBtnCurrent = LOW;
 const int DATA_LED = 7;
 bool flashIsOn = false;
-char alpha[] = {'a', 'b', 'c', 'd', 'e'};
-int alphaIdx = 0;
+int wifiIdx = 0;
 int availWifiCount = 0;
 
 struct wifiInfo{
@@ -105,18 +104,18 @@ void checkChangeMainButton(void){
   if (mainBtnPrev == LOW && mainBtnCurrent == HIGH){
     flashIsOn = !flashIsOn;
   }
-  currentOutput = allWifi[alphaIdx].ssid;
+  currentOutput = allWifi[wifiIdx].ssid;
   char buffer[50];
-  sprintf(buffer, "RSSI: %d dBm\n", allWifi[alphaIdx].rssi);
+  sprintf(buffer, "RSSI: %d dBm\n", allWifi[wifiIdx].rssi);
   rssi = std::string(buffer);
-  sprintf(buffer, "Channel: %d\n", allWifi[alphaIdx].channel);
+  sprintf(buffer, "Channel: %d\n", allWifi[wifiIdx].channel);
   channel = std::string(buffer);
-  sprintf(buffer, "Encrypt: %s\n\n", allWifi[alphaIdx].encType);
+  sprintf(buffer, "Encrypt: %s\n\n", allWifi[wifiIdx].encType);
   encType = std::string(buffer);
 
-  alphaIdx++;
+  wifiIdx++;
   
-  if (alphaIdx > availWifiCount-1){alphaIdx = 0;}
+  if (wifiIdx > availWifiCount-1){wifiIdx = 0;}
   mainBtnPrev = mainBtnCurrent;
   if (flashIsOn){
     analogWrite(DATA_LED, 255); 
