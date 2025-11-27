@@ -12,6 +12,7 @@ const int DATA_LED = 7;
 bool flashIsOn = false;
 char alpha[] = {'a', 'b', 'c', 'd', 'e'};
 int alphaIdx = 0;
+int availWifiCount = 0;
 
 struct wifiInfo{
   std::string ssid;
@@ -66,14 +67,14 @@ void loop() {
 
 void scanWifi(){
   Serial.println("Starting WiFi scan...");
-  int n = WiFi.scanNetworks();
-  allWifi = new wifiInfo[n];
+  availWifiCount = WiFi.scanNetworks();
+  allWifi = new wifiInfo[availWifiCount];
   Serial.println("Scan complete.");
-  if (n == 0) {
+  if (availWifiCount == 0) {
     Serial.println("No networks found.");
   } else {
-    Serial.printf("%d networks found:\n", n);
-    for (int i = 0; i < n; ++i) {
+    Serial.printf("%d networks found:\n", availWifiCount);
+    for (int i = 0; i < availWifiCount; ++i) {
       Serial.printf("SSID: %s\n", WiFi.SSID(i).c_str());
       allWifi[i].ssid = WiFi.SSID(i).c_str();
       Serial.printf("  RSSI: %d dBm\n", WiFi.RSSI(i));
@@ -105,21 +106,21 @@ void checkChangeMainButton(void){
     flashIsOn = !flashIsOn;
   }
   currentOutput = allWifi[alphaIdx].ssid;
-  rssi = string_printf("RSSI: %d dBm\n", allWifi[alphaIdx].rssi);
-  channel = string_printf("Channel: %d\n", allWifi[alphaIdx].channel);
-  encType = string_printf("Encrypt: %s\n\n", allWifi[alphaIdx].encType);
+  char buffer[50];
+  sprintf(buffer, "RSSI: %d dBm\n", allWifi[alphaIdx].rssi);
+  rssi = std::string(buffer);
+  sprintf(buffer, "Channel: %d\n", allWifi[alphaIdx].channel);
+  channel = std::string(buffer);
+  sprintf(buffer, "Encrypt: %s\n\n", allWifi[alphaIdx].encType);
+  encType = std::string(buffer);
 
   alphaIdx++;
-  int allWifiSize = sizeof(allWifi);
-  int wifiInfoSize = sizeof(allWifi[0]);
-  wifiInfoCount = sizeof(allWifi[0]) / sizeof(allWifi);
-  if (alphaIdx > wifiInfoCount){alphaIdx = 0;}
+  
+  if (alphaIdx > availWifiCount-1){alphaIdx = 0;}
   mainBtnPrev = mainBtnCurrent;
   if (flashIsOn){
     analogWrite(DATA_LED, 255); 
-    Serial.printf("wifiInfoCount: %d\n", wifiInfoCount);
-    Serial.printf("allWifiSize: %d\n", allWifiSize);
-    Serial.printf("wifiInfoSize: %d\n", wifiInfoSize);
+    Serial.printf("availWifiCount: %d\n", availWifiCount);
   }
   else{
     analogWrite(DATA_LED, 0);
@@ -149,21 +150,4 @@ boolean debounce(boolean last, int button)
   current = digitalRead(button);           // Read it again
  }
  return current;                           // Return the current value
-}
-
-std::string string_printf(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    
-    // Determine the size needed for the string
-    size_t size = vsnprintf(nullptr, 0, fmt, args) + 1; // +1 for null terminator
-    va_end(args);
-    
-    std::string s(size, '\0'); // Create a string with the required size
-
-    va_start(args, fmt);
-    vsnprintf(&s[0], size, fmt, args); // Format the string
-    va_end(args);
-    
-    return s; // Return the formatted string
 }
